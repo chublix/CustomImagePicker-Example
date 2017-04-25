@@ -10,7 +10,7 @@ import UIKit
 
 class ImagePickerCell: UICollectionViewCell {
 
-    @IBOutlet weak private var imageView: UIImageView!
+    @IBOutlet weak fileprivate var imageView: UIImageView!
     
     var image: UIImage? {
         get {

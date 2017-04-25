@@ -10,18 +10,18 @@ import UIKit
 import GPUImage
 
 @objc protocol ImagePickerPreviewDelegate {
-    optional func imagePickerPreview(originalImage: UIImage?, filteredImage: UIImage?);
-    optional func imagePickerPreviewCancel();
+    @objc optional func imagePickerPreview(_ originalImage: UIImage?, filteredImage: UIImage?);
+    @objc optional func imagePickerPreviewCancel();
 }
 
 class ImagePickerPreviewVC: UIViewController {
 
-    @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private var optionSliders: [UISlider]!
+    @IBOutlet fileprivate weak var imageView: UIImageView!
+    @IBOutlet fileprivate var optionSliders: [UISlider]!
     
     var delegate: ImagePickerPreviewDelegate?
     
-    private var image: UIImage?
+    fileprivate var image: UIImage?
     let imageFilter =  ColorBalanceFilter()
     
     override func viewDidLoad() {
@@ -29,21 +29,21 @@ class ImagePickerPreviewVC: UIViewController {
         
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         updateImage()
     }
     
-    private func updateImage() {
-        imageView.image = imageFilter.imageByFilteringImage(image)
+    fileprivate func updateImage() {
+        imageView.image = imageFilter.image(byFilteringImage: image)
     }
     
     func setImage(image im: UIImage?) {
         image = im
     }
 
-    @IBAction func sliderValueChanged(sender: AnyObject) {
-        if let index = optionSliders.indexOf(sender as! UISlider) { 
+    @IBAction func sliderValueChanged(_ sender: AnyObject) {
+        if let index = optionSliders.index(of: sender as! UISlider) { 
             switch index {
                 case 0:
                     imageFilter.redColor = CGFloat(optionSliders[index].value)
@@ -57,18 +57,18 @@ class ImagePickerPreviewVC: UIViewController {
         }
     }
     
-    @IBAction func okButtonTouch(sender: AnyObject) {
-        dismissViewControllerAnimated(false, completion: nil)
+    @IBAction func okButtonTouch(_ sender: AnyObject) {
+        dismiss(animated: false, completion: nil)
         delegate?.imagePickerPreview?(image, filteredImage: imageView.image)
     }
     
-    @IBAction func cancelButtonTouch(sender: AnyObject) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancelButtonTouch(_ sender: AnyObject) {
+        dismiss(animated: true, completion: nil)
         delegate?.imagePickerPreviewCancel?()
     }
     
-    @IBAction func optionSwitched(sender: AnyObject) {
-        imageFilter.option = (sender as! UISwitch).on
+    @IBAction func optionSwitched(_ sender: AnyObject) {
+        imageFilter.option = (sender as! UISwitch).isOn
         updateImage()
     }
 }
