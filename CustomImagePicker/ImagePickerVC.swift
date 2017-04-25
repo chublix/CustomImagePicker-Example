@@ -10,38 +10,38 @@ import UIKit
 import Photos
 
 @objc protocol ImagePickerDelegate {
-    optional func imagePicker(pickedImage image: UIImage?, filteredImage: UIImage?)
+    @objc optional func imagePicker(pickedImage image: UIImage?, filteredImage: UIImage?)
 }
 
 class ImagePickerVC: UIViewController {
     
-    @IBOutlet weak private var collectionView: UICollectionView!
-    @IBOutlet weak private var collectionViewLayout: UICollectionViewFlowLayout!
-    @IBOutlet weak private var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak fileprivate var collectionView: UICollectionView!
+    @IBOutlet weak fileprivate var collectionViewLayout: UICollectionViewFlowLayout!
+    @IBOutlet weak fileprivate var activityIndicator: UIActivityIndicatorView!
     
-    private var assets: PHFetchResult?
-    private var sideSize: CGFloat!
+    fileprivate var assets: PHFetchResult<AnyObject>?
+    fileprivate var sideSize: CGFloat!
     
     var delegate:ImagePickerDelegate?
     
     class func loadFromStoryboard() -> ImagePickerVC! {
-        let _storyboard = UIStoryboard(name: "Picker", bundle: NSBundle.mainBundle())
-        return _storyboard.instantiateViewControllerWithIdentifier("ImagePickerVC") as! ImagePickerVC
+        let _storyboard = UIStoryboard(name: "Picker", bundle: Bundle.main)
+        return _storyboard.instantiateViewController(withIdentifier: "ImagePickerVC") as! ImagePickerVC
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         sideSize = (collectionView.bounds.width - 16) / 3
-        collectionViewLayout.itemSize = CGSizeMake(sideSize, sideSize)
+        collectionViewLayout.itemSize = CGSize(width: sideSize, height: sideSize)
         collectionViewLayout.minimumLineSpacing = 8
         collectionViewLayout.minimumInteritemSpacing = 8
         
-        if PHPhotoLibrary.authorizationStatus() == .Authorized {
+        if PHPhotoLibrary.authorizationStatus() == .authorized {
             reloadAssets()
         } else {
             PHPhotoLibrary.requestAuthorization({ (status: PHAuthorizationStatus) -> Void in
-                if status == .Authorized {
+                if status == .authorized {
                     self.reloadAssets()
                 } else {
                     self.showNeedAccessMessage()
@@ -50,47 +50,47 @@ class ImagePickerVC: UIViewController {
         }
     }
     
-    private func showNeedAccessMessage() {
-        let alert = UIAlertController(title: "Image picker", message: "App need get access to photos", preferredStyle: .Alert)
+    fileprivate func showNeedAccessMessage() {
+        let alert = UIAlertController(title: "Image picker", message: "App need get access to photos", preferredStyle: .alert)
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: { (action: UIAlertAction) -> Void in
-            self.dismissViewControllerAnimated(true, completion: nil)
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction) -> Void in
+            self.dismiss(animated: true, completion: nil)
         }))
         
-        alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: { (action: UIAlertAction) -> Void in
-            UIApplication.sharedApplication().openURL(NSURL(string: UIApplicationOpenSettingsURLString)!)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action: UIAlertAction) -> Void in
+            UIApplication.shared.openURL(URL(string: UIApplicationOpenSettingsURLString)!)
         }))
         
-        showViewController(alert, sender: nil)
+        show(alert, sender: nil)
     }
     
-    private func reloadAssets() {
+    fileprivate func reloadAssets() {
         activityIndicator.startAnimating()
         assets = nil
         collectionView.reloadData()
-        assets = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: nil)
+        assets = PHAsset.fetchAssets(with: PHAssetMediaType.image, options: nil) as! PHFetchResult<AnyObject>
         collectionView.reloadData()
         activityIndicator.stopAnimating()
     }
     
-    @IBAction func cancelButtonTouch(sender: AnyObject) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancelButtonTouch(_ sender: AnyObject) {
+        dismiss(animated: true, completion: nil)
     }
     
 }
 
 extension ImagePickerVC: UICollectionViewDataSource {
     
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return (assets != nil) ? assets!.count : 0
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        return collectionView.dequeueReusableCellWithReuseIdentifier("ImagePickerCell", forIndexPath: indexPath) 
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        return collectionView.dequeueReusableCell(withReuseIdentifier: "ImagePickerCell", for: indexPath) 
     }
     
-    func collectionView(collectionView: UICollectionView, willDisplayCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
-        PHImageManager.defaultManager().requestImageForAsset(assets?[indexPath.row] as! PHAsset, targetSize: CGSizeMake(sideSize, sideSize), contentMode: .AspectFill, options: nil) { (image: UIImage?, info: [NSObject : AnyObject]?) -> Void in
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        PHImageManager.default().requestImage(for: assets?[indexPath.row] as! PHAsset, targetSize: CGSize(width: sideSize, height: sideSize), contentMode: .aspectFill, options: nil) { (image: UIImage?, info: [AnyHashable: Any]?) -> Void in
             (cell as! ImagePickerCell).image = image
         }
     }
@@ -99,23 +99,23 @@ extension ImagePickerVC: UICollectionViewDataSource {
 
 extension ImagePickerVC: UICollectionViewDelegate {
     
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let _storyboard = storyboard {
             let showPreviewVC = { (image: UIImage!) -> Void in
-                let previewVC = _storyboard.instantiateViewControllerWithIdentifier("ImagePickerPreviewVC") as! ImagePickerPreviewVC
+                let previewVC = _storyboard.instantiateViewController(withIdentifier: "ImagePickerPreviewVC") as! ImagePickerPreviewVC
                 previewVC.definesPresentationContext = true
-                previewVC.modalPresentationStyle = .OverCurrentContext
+                previewVC.modalPresentationStyle = .overCurrentContext
                 previewVC.setImage(image: image)
                 previewVC.delegate = self
-                self.showViewController(previewVC, sender: nil)
+                self.show(previewVC, sender: nil)
             }
             
             let width = self.view.bounds.width
             let options = PHImageRequestOptions()
-            options.deliveryMode = .HighQualityFormat
-            options.resizeMode = .Exact
+            options.deliveryMode = .highQualityFormat
+            options.resizeMode = .exact
             
-            PHImageManager.defaultManager().requestImageForAsset(assets?[indexPath.row] as! PHAsset, targetSize: CGSizeMake(width, 0.75 * width), contentMode: .AspectFill, options: options) { (image: UIImage?, info: [NSObject : AnyObject]?) -> Void in
+            PHImageManager.default().requestImage(for: assets?[indexPath.row] as! PHAsset, targetSize: CGSize(width: width, height: 0.75 * width), contentMode: .aspectFill, options: options) { (image: UIImage?, info: [AnyHashable: Any]?) -> Void in
                 if let _image = image {
                     showPreviewVC(_image)
                 }
@@ -127,9 +127,9 @@ extension ImagePickerVC: UICollectionViewDelegate {
 
 extension ImagePickerVC: ImagePickerPreviewDelegate {
     
-    func imagePickerPreview(originalImage: UIImage?, filteredImage: UIImage?) {
+    func imagePickerPreview(_ originalImage: UIImage?, filteredImage: UIImage?) {
         self.delegate?.imagePicker?(pickedImage: originalImage, filteredImage: filteredImage)
-        self.dismissViewControllerAnimated(true, completion: nil)
+        self.dismiss(animated: true, completion: nil)
     }
     
 }

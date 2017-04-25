@@ -10,13 +10,13 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    @IBOutlet weak private var imageView: UIImageView!
-    @IBOutlet weak private var filteredImageView: UIImageView!
+    @IBOutlet weak fileprivate var imageView: UIImageView!
+    @IBOutlet weak fileprivate var filteredImageView: UIImageView!
 
-    @IBAction func pickImageButtonTouch(sender: AnyObject) {
+    @IBAction func pickImageButtonTouch(_ sender: AnyObject) {
         let imagePicker = ImagePickerVC.loadFromStoryboard()
-        imagePicker.delegate = self
-        showViewController(imagePicker, sender: nil)
+        imagePicker?.delegate = self
+        show(imagePicker!, sender: nil)
     }
 
 }
